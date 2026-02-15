@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config/loki-config.yaml:/etc/loki/loki-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.3
+    container_name: promtail
+    volumes:
+      - ./config/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - ./logs:/var/log/cloudtrail
+      - ./processed:/var/log/processed
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./config/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  cloudtrail-processor:
+    build:
+      context: ./processor
+      dockerfile: Dockerfile
+    container_name: cloudtrail-processor
+    volumes:
+      - ./logs:/app/logs
+      - ./processed:/app/processed
+      - ./config/aws-credentials:/root/.aws/credentials:ro
+    environment:
+      - AWS_REGION=${AWS_REGION:-me-south-1}
+      - S3_BUCKET=${S3_BUCKET}
+      - PROCESSING_INTERVAL=${PROCESSING_INTERVAL:-300}
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  loki-data:
+  grafana-data:

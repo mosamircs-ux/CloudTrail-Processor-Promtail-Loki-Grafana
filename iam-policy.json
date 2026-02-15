@@ -1,0 +1,81 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CloudTrailS3ReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::aws-cloudtrail-logs-124737196430-56a3b94b",
+        "arn:aws:s3:::aws-cloudtrail-logs-124737196430-56a3b94b/*"
+      ]
+    },
+    {
+      "Sid": "CloudTrailDescribeAccess",
+      "Effect": "Allow",
+      "Action": [
+        "cloudtrail:DescribeTrails",
+        "cloudtrail:GetTrailStatus",
+        "cloudtrail:LookupEvents"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EC2ReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeTags",
+        "ec2:DescribeVolumes",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "S3ReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketLocation",
+        "s3:GetBucketTagging"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "RDSReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "rds:DescribeDBInstances",
+        "rds:DescribeDBClusters",
+        "rds:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "LambdaReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:ListFunctions",
+        "lambda:GetFunction",
+        "lambda:ListTags"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "IAMReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetUser",
+        "iam:ListUsers",
+        "iam:ListAccessKeys",
+        "iam:GetAccessKeyLastUsed"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

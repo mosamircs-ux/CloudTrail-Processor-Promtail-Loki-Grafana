@@ -1,0 +1,59 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: cloudtrail
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: cloudtrail
+          __path__: /var/log/processed/*.jsonl
+    
+    pipeline_stages:
+      # Parse JSON log lines
+      - json:
+          expressions:
+            timestamp: eventTime
+            event_name: eventName
+            event_source: eventSource
+            aws_region: awsRegion
+            source_ip: sourceIPAddress
+            user_agent: userAgent
+            access_key: userIdentity.accessKeyId
+            principal_id: userIdentity.principalId
+            user_type: userIdentity.type
+            user_arn: userIdentity.arn
+            account_id: userIdentity.accountId
+            session_context: userIdentity.sessionContext
+            error_code: errorCode
+            error_message: errorMessage
+            request_id: requestID
+            resources: resources
+            resource_type: resourceType
+            resource_name: resourceName
+            resource_arn: resourceARN
+      
+      # Extract timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      
+      # Add labels for filtering
+      - labels:
+          event_name:
+          event_source:
+          aws_region:
+          access_key:
+          user_type:
+          error_code:
+          resource_type:
+          resource_name:
+          account_id:
